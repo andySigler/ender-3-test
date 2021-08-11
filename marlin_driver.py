@@ -10,12 +10,14 @@ MARLIN_GCODE_HOME = 'G28'
 MARLIN_GCODE_POSITION_GET = 'M114'
 MARLIN_GCODE_MOVE = 'G0'
 MARLIN_GCODE_MAX_FEEDRATE = 'M203'
+MARLIN_GCODE_MAX_ACCELERATION = 'M201'
+MARLIN_GCODE_ACCELERATION = 'M204'
 MARLIN_GCODE_FINISH_MOVES = 'M400'
 
 MARLIN_DEFAULT_MAX_SPEED = {
     'x': 500,
     'y': 500,
-    'z': 10
+    'z': 200
 }
 
 MARLIN_ACK = 'ok'
@@ -87,10 +89,26 @@ class MarlinDriver(object):
         self.command(move_msg)
         self.update_position()
 
+    def set_acceleration(self, acceleration):
+        # default is 1000
+        accel_msg = '{0} T{1}'.format(MARLIN_GCODE_ACCELERATION, acceleration)
+        self.command(accel_msg)
+
     def set_speed(self, speed):
         speed = speed * 60 # mm/m
-        move_msg = '{0} F{1}'.format(MARLIN_GCODE_MOVE, speed)
-        self.command(move_msg)
+        speed_msg = '{0} F{1}'.format(MARLIN_GCODE_MOVE, speed)
+        self.command(speed_msg)
+
+    def set_max_acceleration(self, x=None, y=None, z=None):
+        # defaults (x=500, y=500, z=100)
+        accel_msg = '{0}'.format(MARLIN_GCODE_MAX_ACCELERATION)
+        if x is not None:
+            accel_msg = '{0} X{1}'.format(accel_msg, x)
+        if y is not None:
+            accel_msg = '{0} Y{1}'.format(accel_msg, y)
+        if z is not None:
+            accel_msg = '{0} Z{1}'.format(accel_msg, z)
+        self.command(accel_msg)
 
     def set_max_speed(self, x=None, y=None, z=None):
         rate_msg = '{0}'.format(MARLIN_GCODE_MAX_FEEDRATE)
@@ -137,10 +155,17 @@ if __name__ == '__main__':
 
     marlin = MarlinDriver()
     marlin.connect()
-    marlin.set_speed(5)
-    marlin.move_to(Position(z=10))
-    marlin.set_speed(1)
-    marlin.move_to(Position(z=20))
-    marlin.set_speed(5)
-    marlin.home('z')
+    marlin.home()
+
+    # marlin.set_max_speed(z=200)
+    # marlin.set_speed(200)
+    # marlin.move_to(Position(z=50))
+
+    marlin.set_max_speed(y=500)
+    marlin.set_speed(500)
+    marlin.set_max_acceleration(y=2000)
+    marlin.set_acceleration(2000)
+    marlin.move_to(Position(y=150))
+    marlin.move_to(Position(y=0))
+
     marlin.disconnect()

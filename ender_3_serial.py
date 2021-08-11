@@ -63,7 +63,11 @@ class Ender3Serial(serial.Serial):
             msg = self.readline()
             if not msg:
                 raise RuntimeError('Did not get response from Ender-3')
-            msg = msg.decode('utf-8').strip()
+            try:
+                msg = msg.decode('utf-8').strip()
+            except UnicodeDecodeError as e:
+                logger.error('Unable to decode Ender-3 response: {0}'.format(msg))
+                raise e
             logger.debug('<-{0}'.format(msg))
             rsp.append(msg)
             if ack in msg:

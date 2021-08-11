@@ -9,6 +9,13 @@ logger = logging.getLogger('ender_3_test.motion_control')
 MOTION_DEFAULT_TRAVEL_Z = 5 # default height from base while travelling
 MOTION_DEFAULT_SPEED = 300
 
+MOTION_DEFAULT_ACCELERATION = 1000
+MOTION_MAX_ACCELERATION = {
+    'x': 1000,
+    'y': 1000,
+    'z': 100
+}
+
 
 class MotionController(object):
 
@@ -18,16 +25,23 @@ class MotionController(object):
         self.tool_offset = Position(x=0, y=0, z=0)
         self.safe_z = MOTION_DEFAULT_TRAVEL_Z
         self.speed = MOTION_DEFAULT_SPEED
+        self.acceleration = MOTION_DEFAULT_ACCELERATION
 
     def connect(self):
         self.marlin.connect()
         self._update_tool_position()
+        self.marlin.set_max_acceleration(**MOTION_MAX_ACCELERATION)
+        self.marlin.set_acceleration(self.acceleration)
 
     def disconnect(self):
         self.marlin.disconnect()
 
     def set_speed(self, speed):
         self.speed = speed
+
+    def set_acceleration(self, acceleration):
+        self.acceleration = acceleration
+        self.marlin.set_acceleration(self.acceleration)
 
     def set_tool_offset(self, offset):
         self.tool_offset.update(offset)
