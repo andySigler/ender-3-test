@@ -6,7 +6,6 @@ from serial.tools.list_ports import comports
 
 logger = logging.getLogger('ender_3_test.serial')
 
-
 # SERIAL PORT
 ENDER_3_USB_HWID = '1A86:7523'
 ENDER_3_BAUDRATE = 115200
