@@ -9,9 +9,9 @@ logger = logging.getLogger('ender_3_test.marlin')
 MARLIN_GCODE_HOME = 'G28'
 MARLIN_GCODE_POSITION_GET = 'M114'
 MARLIN_GCODE_MOVE = 'G0'
-MARLIN_GCODE_FEEDRATE = 'M203'
+MARLIN_GCODE_MAX_FEEDRATE = 'M203'
 
-MARLIN_DEFAULT_FEEDRATE = {
+MARLIN_DEFAULT_MAX_FEEDRATE = {
     'x': 500,
     'y': 500,
     'z': 5
@@ -66,11 +66,11 @@ class MarlinDriver(object):
             self.target_position.update(Position(y=0))
         if 'z' in axis:
             self.target_position.update(Position(z=0))
-        self.set_feedrate(**MARLIN_DEFAULT_FEEDRATE)
+        self.set_max_feedrate(**MARLIN_DEFAULT_MAX_FEEDRATE)
         self.command(home_msg)
         self.update_position()
 
-    def move_to(self, pos):
+    def move_to(self, pos, speed=None):
         self.target_position.update(pos)
         move_msg = '{0}'.format(MARLIN_GCODE_MOVE)
         if pos.x is not None:
@@ -79,10 +79,17 @@ class MarlinDriver(object):
             move_msg = '{0} Y{1}'.format(move_msg, pos.y)
         if pos.z is not None:
             move_msg = '{0} Z{1}'.format(move_msg, pos.z)
+        if speed is not None:
+            move_msg = '{0} F{1}'.format(move_msg, speed)
         self.command(move_msg)
         self.update_position()
 
-    def set_feedrate(self, x=None, y=None, z=None):
+    def set_feedrate(self, feedrate):
+        feedrate = feedrate * 60 # mm/m
+        move_msg = '{0} F{1}'.format(MARLIN_GCODE_MOVE, feedrate)
+        self.command(move_msg)
+
+    def set_max_feedrate(self, x=None, y=None, z=None):
         rate_msg = '{0}'.format(MARLIN_GCODE_FEEDRATE)
         if x is not None:
             rate_msg = '{0} X{1}'.format(rate_msg, x)
