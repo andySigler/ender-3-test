@@ -20,8 +20,8 @@ MARLIN_DEFAULT_MAX_SPEED = {
     'z': 200
 }
 
-MARLIN_ACK = 'ok'
-MARLIN_BUSY_MSG = 'echo:busy: processing'
+MARLIN_ACK = b'ok'
+MARLIN_BUSY_MSG = b'echo:busy: processing'
 
 
 class MarlinDriver(object):
@@ -29,36 +29,27 @@ class MarlinDriver(object):
     def __init__(self):
         self.ender_3 = Ender3Serial()
         self.current_position = Position(x=0, y=0, z=0)
-        self.target_position = Position(x=0, y=0, z=0)
         self.max_speed = MARLIN_DEFAULT_MAX_SPEED.copy()
 
     def connect(self):
         self.ender_3.connect_to_ender_3()
-        self.update_position(initialize=True)
+        self.update_position()
 
     def disconnect(self):
         self.ender_3.close()
 
     def command(self, gcode):
-        gcode_with_finish = '{0} {1}'.format(gcode, MARLIN_GCODE_FINISH_MOVES)
         self.ender_3.write_string(gcode)
-        rsp_list = self.ender_3.read_strings(ack=MARLIN_ACK)
+        rsp_list = self.ender_3.read_bytes(ack=MARLIN_ACK)
         rsp_list = self._filter_response_list(rsp_list)
         return rsp_list
 
-    def update_position(self, initialize=False):
+    def update_position(self):
+        self.finish_moves()
         rsp = self.command(MARLIN_GCODE_POSITION_GET)
         parsed_rsp = self._parse_response_coordinates(rsp[0])
         pos = Position(**parsed_rsp)
         self.current_position.update(pos)
-        if initialize:
-            self.target_position.update(pos)
-        else:
-            target_dist = self.current_position.distance_to(self.target_position)
-            if target_dist > 1:
-                raise RuntimeError(
-                    'Current position {0} is {1} from target position {2}'.format(
-                        self.current_position, target_dist, self.target_position))
 
     def home(self, axis=''):
         if not axis:
@@ -66,17 +57,20 @@ class MarlinDriver(object):
         logger.debug('Homing {0}'.format(axis))
         home_msg = '{0} {1}'.format(MARLIN_GCODE_HOME, axis.upper())
         if 'x' in axis:
-            self.target_position.update(Position(x=0))
+            self.current_position.update(Position(x=0))
         if 'y' in axis:
-            self.target_position.update(Position(y=0))
+            self.current_position.update(Position(y=0))
         if 'z' in axis:
-            self.target_position.update(Position(z=0))
+            self.current_position.update(Position(z=0))
         self.set_max_speed(**self.max_speed)
         self.command(home_msg)
+        self.finish_moves()
         self.update_position()
 
+    def finish_moves(self):
+        self.command(MARLIN_GCODE_FINISH_MOVES)
+
     def move_to(self, pos, speed=None):
-        self.target_position.update(pos)
         move_msg = '{0}'.format(MARLIN_GCODE_MOVE)
         if pos.x is not None:
             move_msg = '{0} X{1}'.format(move_msg, round(pos.x, 3))
@@ -87,7 +81,7 @@ class MarlinDriver(object):
         if speed is not None:
             move_msg = '{0} F{1}'.format(move_msg, speed)
         self.command(move_msg)
-        self.update_position()
+        self.current_position.update(pos)
 
     def set_acceleration(self, acceleration):
         # default is 1000
@@ -130,7 +124,7 @@ class MarlinDriver(object):
                 continue
             if MARLIN_ACK in rsp:
                 continue
-            filtered_list.append(rsp)
+            filtered_list.append(rsp.decode('utf-8'))
         return filtered_list
 
     def _parse_response_coordinates(self, rsp):

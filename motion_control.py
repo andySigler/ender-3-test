@@ -36,6 +36,9 @@ class MotionController(object):
     def disconnect(self):
         self.marlin.disconnect()
 
+    def finish_moves(self):
+        self.marlin.finish_moves()
+
     def set_speed(self, speed):
         self.speed = speed
 

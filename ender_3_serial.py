@@ -54,7 +54,7 @@ class Ender3Serial(serial.Serial):
         self.write(msg)
         self.flush() # wait until all data is written
 
-    def read_strings(self, ack=None):
+    def read_bytes(self, ack=None):
         if not ack:
             raise ValueError('\"ack=\"" must be set when reading lines')
         rsp = []
@@ -63,11 +63,6 @@ class Ender3Serial(serial.Serial):
             msg = self.readline()
             if not msg:
                 raise RuntimeError('Did not get response from Ender-3')
-            try:
-                msg = msg.decode('utf-8').strip()
-            except UnicodeDecodeError as e:
-                logger.error('Unable to decode Ender-3 response: {0}'.format(msg))
-                raise e
             logger.debug('<-{0}'.format(msg))
             rsp.append(msg)
             if ack in msg:
@@ -87,5 +82,5 @@ if __name__ == '__main__':
     port = Ender3Serial()
     port.connect_to_ender_3()
     port.write_string('G28')
-    port.read_strings(ack='ok')
+    port.read_bytes(ack=b'ok')
     port.close()
