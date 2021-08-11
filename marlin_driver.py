@@ -12,7 +12,7 @@ MARLIN_GCODE_MOVE = 'G0'
 MARLIN_GCODE_MAX_FEEDRATE = 'M203'
 MARLIN_GCODE_FINISH_MOVES = 'M400'
 
-MARLIN_DEFAULT_MAX_FEEDRATE = {
+MARLIN_DEFAULT_MAX_SPEED = {
     'x': 500,
     'y': 500,
     'z': 10
@@ -26,8 +26,9 @@ class MarlinDriver(object):
 
     def __init__(self):
         self.ender_3 = Ender3Serial()
-        self.current_position = Position()
-        self.target_position = Position()
+        self.current_position = Position(x=0, y=0, z=0)
+        self.target_position = Position(x=0, y=0, z=0)
+        self.max_speed = MARLIN_DEFAULT_MAX_SPEED.copy()
 
     def connect(self):
         self.ender_3.connect_to_ender_3()
@@ -68,7 +69,7 @@ class MarlinDriver(object):
             self.target_position.update(Position(y=0))
         if 'z' in axis:
             self.target_position.update(Position(z=0))
-        self.set_max_feedrate(**MARLIN_DEFAULT_MAX_FEEDRATE)
+        self.set_max_speed(**self.max_speed)
         self.command(home_msg)
         self.update_position()
 
@@ -86,18 +87,21 @@ class MarlinDriver(object):
         self.command(move_msg)
         self.update_position()
 
-    def set_feedrate(self, feedrate):
-        feedrate = feedrate * 60 # mm/m
-        move_msg = '{0} F{1}'.format(MARLIN_GCODE_MOVE, feedrate)
+    def set_speed(self, speed):
+        speed = speed * 60 # mm/m
+        move_msg = '{0} F{1}'.format(MARLIN_GCODE_MOVE, speed)
         self.command(move_msg)
 
-    def set_max_feedrate(self, x=None, y=None, z=None):
-        rate_msg = '{0}'.format(MARLIN_GCODE_FEEDRATE)
+    def set_max_speed(self, x=None, y=None, z=None):
+        rate_msg = '{0}'.format(MARLIN_GCODE_MAX_FEEDRATE)
         if x is not None:
+            self.max_speed['x'] = x
             rate_msg = '{0} X{1}'.format(rate_msg, x)
         if y is not None:
+            self.max_speed['y'] = y
             rate_msg = '{0} Y{1}'.format(rate_msg, y)
         if z is not None:
+            self.max_speed['z'] = z
             rate_msg = '{0} Z{1}'.format(rate_msg, z)
         self.command(rate_msg)
 
@@ -133,10 +137,10 @@ if __name__ == '__main__':
 
     marlin = MarlinDriver()
     marlin.connect()
-    marlin.set_feedrate(z=5)
+    marlin.set_speed(5)
     marlin.move_to(Position(z=10))
-    marlin.set_feedrate(z=1)
+    marlin.set_speed(1)
     marlin.move_to(Position(z=20))
-    marlin.set_feedrate(z=5)
+    marlin.set_speed(5)
     marlin.home('z')
     marlin.disconnect()

@@ -82,6 +82,6 @@ if __name__ == '__main__':
 
     port = Ender3Serial()
     port.connect_to_ender_3()
-    port.write_string('G28Z')
+    port.write_string('G28')
     port.read_strings(ack='ok')
     port.close()
