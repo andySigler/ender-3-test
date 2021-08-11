@@ -76,11 +76,11 @@ class MarlinDriver(object):
         self.target_position.update(pos)
         move_msg = '{0}'.format(MARLIN_GCODE_MOVE)
         if pos.x is not None:
-            move_msg = '{0} X{1}'.format(move_msg, pos.x)
+            move_msg = '{0} X{1}'.format(move_msg, round(pos.x, 3))
         if pos.y is not None:
-            move_msg = '{0} Y{1}'.format(move_msg, pos.y)
+            move_msg = '{0} Y{1}'.format(move_msg, round(pos.y, 3))
         if pos.z is not None:
-            move_msg = '{0} Z{1}'.format(move_msg, pos.z)
+            move_msg = '{0} Z{1}'.format(move_msg, round(pos.z, 3))
         if speed is not None:
             move_msg = '{0} F{1}'.format(move_msg, speed)
         self.command(move_msg)
