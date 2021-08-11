@@ -28,12 +28,7 @@ class MotionController(object):
         self.speed = speed
 
     def set_tool_offset(self, offset):
-        if offset.x is not None:
-            self.tool_offset.x = offset.x
-        if offset.y is not None:
-            self.tool_offset.y = offset.y
-        if offset.z is not None:
-            self.tool_offset.z = offset.z
+        self.tool_offset.update(offset)
         self._update_tool_position()
 
     def home(self, axis=''):
@@ -43,12 +38,7 @@ class MotionController(object):
 
     def move_to(self, pos, relative=False, direct=False):
         if relative:
-            if pos.x is not None:
-                pos.x += self.tool_position.x
-            if pos.y is not None:
-                pos.y += self.tool_position.y
-            if pos.z is not None:
-                pos.z += self.tool_position.z
+            pos = pos + self.tool_position
 
         travel_poses = []
         if direct:
@@ -66,18 +56,10 @@ class MotionController(object):
         self._update_tool_position()
 
     def _apply_tool_offset(self, pos):
-        if pos.x is not None:
-            pos.x += self.tool_offset.x
-        if pos.y is not None:
-            pos.y += self.tool_offset.y
-        if pos.z is not None:
-            pos.z += self.tool_offset.z
-        return pos
+        return pos + self.tool_offset
 
     def _update_tool_position(self):
-        self.tool_position.x = self.marlin.current_position.x - self.tool_offset.x
-        self.tool_position.y = self.marlin.current_position.y - self.tool_offset.y
-        self.tool_position.z = self.marlin.current_position.z - self.tool_offset.z
+        self.tool_position = self.marlin.current_position - self.tool_offset
 
 
 if __name__ == '__main__':
