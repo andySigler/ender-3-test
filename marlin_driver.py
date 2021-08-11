@@ -10,11 +10,12 @@ MARLIN_GCODE_HOME = 'G28'
 MARLIN_GCODE_POSITION_GET = 'M114'
 MARLIN_GCODE_MOVE = 'G0'
 MARLIN_GCODE_MAX_FEEDRATE = 'M203'
+MARLIN_GCODE_FINISH_MOVES = 'M400'
 
 MARLIN_DEFAULT_MAX_FEEDRATE = {
     'x': 500,
     'y': 500,
-    'z': 5
+    'z': 10
 }
 
 MARLIN_ACK = 'ok'
@@ -36,6 +37,7 @@ class MarlinDriver(object):
         self.ender_3.close()
 
     def command(self, gcode):
+        gcode_with_finish = '{0} {1}'.format(gcode, MARLIN_GCODE_FINISH_MOVES)
         self.ender_3.write_string(gcode)
         rsp_list = self.ender_3.read_strings(ack=MARLIN_ACK)
         rsp_list = self._filter_response_list(rsp_list)
