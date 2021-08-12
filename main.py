@@ -5,6 +5,7 @@ from scraper import Scraper
 
 
 NEEDLE_TOOL_OFFSET = Position(x=15.5, y=12, z=2)
+NEEDLE_WIDTH = 2 # millimeters
 SAMPLE_POSITION = Position(x=100, y=100, z=0)
 SAMPLE_SIZE = 5 # millimeters
 
@@ -17,8 +18,9 @@ def test_bed_position(scraper):
 scraper = Scraper()
 scraper.connect()
 atexit.register(scraper.disconnect)
-scraper.home()
+# scraper.home()
 scraper.set_tool_offset(NEEDLE_TOOL_OFFSET)
+scraper.set_needle_width(NEEDLE_WIDTH)
 
 # # find the TOOL-OFFSET
 # scraper.move_to(Position(x=0, y=0, z=0), safe_z=20)
@@ -27,7 +29,7 @@ scraper.set_tool_offset(NEEDLE_TOOL_OFFSET)
 # scraper.move_to(SAMPLE_POSITION, safe_z=20)
 
 # actually SCRAPE
-scraper.scrape(SAMPLE_POSITION, SAMPLE_SIZE, speed=100, accel=100)
+scraper.scrape(SAMPLE_POSITION, SAMPLE_SIZE, crossover=1, speed=10, accel=500)
 scraper.resting_position()
 
 scraper.finish_moves()
