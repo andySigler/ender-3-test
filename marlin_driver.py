@@ -12,6 +12,8 @@ MARLIN_GCODE_MOVE = 'G0'
 MARLIN_GCODE_MAX_FEEDRATE = 'M203'
 MARLIN_GCODE_MAX_ACCELERATION = 'M201'
 MARLIN_GCODE_ACCELERATION = 'M204'
+MARLIN_GCODE_ENABLE_STEPPERS = 'M17'
+MARLIN_GCODE_DISABLE_STEPPERS = 'M18'
 MARLIN_GCODE_FINISH_MOVES = 'M400'
 
 MARLIN_DEFAULT_MAX_SPEED = {
@@ -51,7 +53,13 @@ class MarlinDriver(object):
             if retries == 0:
                 raise RuntimeError('Unable to update current position')
             return self.update_position(retries=retries - 1)
-        parsed_rsp = self._parse_response_coordinates(rsp[0])
+        parsed_rsp = None
+        for r in rsp:
+            try:
+                parsed_rsp = self._parse_response_coordinates(r)
+            except:
+                continue
+        assert parsed_rsp is not None
         pos = Position(**parsed_rsp)
         self.current_position.update(pos)
 
@@ -73,6 +81,14 @@ class MarlinDriver(object):
 
     def finish_moves(self):
         self.command(MARLIN_GCODE_FINISH_MOVES)
+
+    def enable_axis(self, axis='xyz'):
+        msg = '{0} {1}'.format(MARLIN_GCODE_ENABLE_STEPPERS, axis.upper())
+        self.command(msg)
+
+    def disable_axis(self, axis='xyz'):
+        msg = '{0} {1}'.format(MARLIN_GCODE_DISABLE_STEPPERS, axis.upper())
+        self.command(msg)
 
     def move_to(self, pos, speed=None):
         move_msg = '{0}'.format(MARLIN_GCODE_MOVE)
@@ -137,6 +153,10 @@ class MarlinDriver(object):
 
     def _parse_response_coordinates(self, rsp):
         # X:0.00 Y:0.00 Z:0.00 E:0.00 Count X:0 Y:0 Z:0
+        assert 'X:' in rsp
+        assert 'Y:' in rsp
+        assert 'Z:' in rsp
+        assert 'Count' in rsp
         return {
             axis.split(':')[0].lower(): float(axis.split(':')[1])
             for axis in rsp.split(' ')[:3]

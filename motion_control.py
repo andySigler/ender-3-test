@@ -7,6 +7,8 @@ from position import Position
 logger = logging.getLogger('ender_3_test.motion_control')
 
 MOTION_DEFAULT_TRAVEL_Z = 5 # default height from base while travelling
+MOTION_PRE_HOME_RISE_MM = 5
+
 MOTION_DEFAULT_SPEED = 300
 
 MOTION_DEFAULT_ACCELERATION = 1000
@@ -55,8 +57,17 @@ class MotionController(object):
 
     def home(self, axis=''):
         # TODO: home safely depending on tool position
+        self.move_to(Position(0, 0, MOTION_PRE_HOME_RISE_MM), relative=True, direct=True)
         self.marlin.home(axis)
         self._update_tool_position()
+        tp = self.tool_position
+        self.move_to(Position(x=tp.x, y=tp.y, z=self.safe_z))
+
+    def enable_axis(self, axis='xyz'):
+        self.marlin.enable_axis(axis)
+
+    def disable_axis(self, axis='xyz'):
+        self.marlin.disable_axis(axis)
 
     def move_to(self, pos, relative=False, direct=False, safe_z=None):
         if self.tool_position.distance_to(pos) == 0:

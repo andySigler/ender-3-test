@@ -1,4 +1,7 @@
 import atexit
+import logging
+import sys
+import time
 
 from position import Position
 from scraper import Scraper
@@ -9,6 +12,14 @@ NEEDLE_WIDTH = 2 # millimeters
 SAMPLE_POSITION = Position(x=100, y=100, z=0)
 SAMPLE_SIZE = 5 # millimeters
 
+logging.basicConfig(
+        stream=sys.stdout, 
+        filemode='w',
+        format='%(levelname)s %(asctime)s - %(message)s', 
+        level=logging.ERROR)
+
+# logging.getLogger('ender_3_test.serial').setLevel(logging.DEBUG)
+
 
 def test_bed_position(scraper):
     # TODO: function to help find a point on the bed
@@ -18,9 +29,11 @@ def test_bed_position(scraper):
 scraper = Scraper()
 scraper.connect()
 atexit.register(scraper.disconnect)
-# scraper.home()
 scraper.set_tool_offset(NEEDLE_TOOL_OFFSET)
 scraper.set_needle_width(NEEDLE_WIDTH)
+
+# scraper.enable_axis()
+scraper.home()
 
 # # find the TOOL-OFFSET
 # scraper.move_to(Position(x=0, y=0, z=0), safe_z=20)
