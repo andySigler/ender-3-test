@@ -17,9 +17,9 @@ MARLIN_GCODE_DISABLE_STEPPERS = 'M18'
 MARLIN_GCODE_FINISH_MOVES = 'M400'
 
 MARLIN_DEFAULT_MAX_SPEED = {
-    'x': 500,
-    'y': 500,
-    'z': 200
+    'x': 1000,
+    'y': 1000,
+    'z': 300
 }
 
 MARLIN_ACK = b'ok'

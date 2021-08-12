@@ -10,10 +10,10 @@ logger = logging.getLogger('ender_3_test.scrape_planner')
 def generate_scrape_lines_square(pos, width, step_size, horizontal=False, start='tl'):
     # get the start/end corners
     corners = {
-        'tl': pos + Position(x=-width/2, y=width/2, z=pos.z),
-        'tr': pos + Position(x=width/2, y=width/2, z=pos.z),
-        'bl': pos + Position(x=-width/2, y=-width/2, z=pos.z),
-        'br': pos + Position(x=width/2, y=-width/2, z=pos.z)
+        'tl': pos + Position(x=-width/2, y=width/2, z=0),
+        'tr': pos + Position(x=width/2, y=width/2, z=0),
+        'bl': pos + Position(x=-width/2, y=-width/2, z=0),
+        'br': pos + Position(x=width/2, y=-width/2, z=0)
     }
     start_pos = corners.get(start)
     if start_pos is None:
@@ -69,14 +69,14 @@ if __name__ == '__main__':
     logger.setLevel(logging.DEBUG)
 
     logger.debug('Test: Vertical - TL')
-    lines = generate_scrape_lines_square(Position(x=0, y=0, z=0), 6.5, 1.5, horizontal=False, start='tl')
+    lines = generate_scrape_lines_square(Position(x=0, y=0, z=2), 6.5, 1.5, horizontal=False, start='tl')
     for l in lines:
         logger.debug('{0} - {1}'.format(l[0], l[1]))
-    logger.debug('Test: Vertical - BR')
-    lines = generate_scrape_lines_square(Position(x=0, y=0, z=0), 5, 1, horizontal=False, start='br')
-    for l in lines:
-        logger.debug('{0} - {1}'.format(l[0], l[1]))
-    logger.debug('Test: Horizontal - BR')
-    lines = generate_scrape_lines_square(Position(x=0, y=0, z=0), 5, 1, horizontal=True, start='br')
-    for l in lines:
-        logger.debug('{0} - {1}'.format(l[0], l[1]))
+    # logger.debug('Test: Vertical - BR')
+    # lines = generate_scrape_lines_square(Position(x=0, y=0, z=0), 5, 1, horizontal=False, start='br')
+    # for l in lines:
+    #     logger.debug('{0} - {1}'.format(l[0], l[1]))
+    # logger.debug('Test: Horizontal - BR')
+    # lines = generate_scrape_lines_square(Position(x=0, y=0, z=0), 5, 1, horizontal=True, start='br')
+    # for l in lines:
+    #     logger.debug('{0} - {1}'.format(l[0], l[1]))

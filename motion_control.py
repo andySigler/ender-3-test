@@ -13,9 +13,9 @@ MOTION_DEFAULT_SPEED = 300
 
 MOTION_DEFAULT_ACCELERATION = 1000
 MOTION_MAX_ACCELERATION = {
-    'x': 1000,
-    'y': 1000,
-    'z': 100
+    'x': 5000,
+    'y': 5000,
+    'z': 500
 }
 
 
