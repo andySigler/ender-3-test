@@ -44,9 +44,13 @@ class MarlinDriver(object):
         rsp_list = self._filter_response_list(rsp_list)
         return rsp_list
 
-    def update_position(self):
+    def update_position(self, retries=3):
         self.finish_moves()
         rsp = self.command(MARLIN_GCODE_POSITION_GET)
+        if len(rsp) == 0:
+            if retries == 0:
+                raise RuntimeError('Unable to update current position')
+            return self.update_position(retries=retries - 1)
         parsed_rsp = self._parse_response_coordinates(rsp[0])
         pos = Position(**parsed_rsp)
         self.current_position.update(pos)
@@ -124,7 +128,11 @@ class MarlinDriver(object):
                 continue
             if MARLIN_ACK in rsp:
                 continue
-            filtered_list.append(rsp.decode('utf-8'))
+            try:
+                filtered_list.append(rsp.decode('utf-8'))
+            except UnicodeDecodeError:
+                logger.error('Cannot decode bytes received: {0}'.format(rsp))
+                continue
         return filtered_list
 
     def _parse_response_coordinates(self, rsp):
