@@ -1,6 +1,9 @@
 import math
 
 
+POSITION_ROUNDING_PRECISION = 2
+
+
 class Position(object):
 
     def __init__(self, x=None, y=None, z=None):
@@ -52,21 +55,21 @@ class Position(object):
     def __mul__(self, value):
         ret = self.duplicate()
         if ret.x is not None:
-            ret.x *= value
+            ret.x = round(ret.x * value, POSITION_ROUNDING_PRECISION)
         if ret.y is not None:
-            ret.y *= value
+            ret.y = round(ret.y * value, POSITION_ROUNDING_PRECISION)
         if ret.z is not None:
-            ret.z *= value
+            ret.z = round(ret.z * value, POSITION_ROUNDING_PRECISION)
         return ret
 
     def __truediv__(self, value):
         ret = self.duplicate()
         if ret.x is not None:
-            ret.x /= value
+            ret.x = round(ret.x / value, POSITION_ROUNDING_PRECISION)
         if ret.y is not None:
-            ret.y /= value
+            ret.y = round(ret.y / value, POSITION_ROUNDING_PRECISION)
         if ret.z is not None:
-            ret.z /= value
+            ret.z = round(ret.z / value, POSITION_ROUNDING_PRECISION)
         return ret
 
     def duplicate(self):
